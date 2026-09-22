@@ -100,14 +100,43 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 2. (다음 그래프를 추가할 자리)
+# 구역 2. 장르 안에 영화가 들어있는 트리맵
+# ============================================================
+st.header("② 장르별 영화 트리맵 (총 관객 기준)")
+st.markdown(
+    "큰 칸이 장르, 그 안의 작은 칸이 영화 한 편입니다. "
+    "칸의 크기는 그 영화의 총 관객(total_audi) 수에 비례합니다."
+)
+
+fig2 = px.treemap(
+    df,
+    path=["대표장르", "movieNm"],
+    values="total_audi",
+    title="장르별 영화 트리맵 (칸 크기 = 총 관객)",
+)
+fig2.update_traces(
+    hovertemplate="%{label}<br>총 관객: %{value:,}명<extra></extra>"
+)
+
+st.plotly_chart(fig2, width="stretch", key="chart_2")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 애니메이션 장르 안에서도 한두 편이 총 관객을 대부분 차지한다.",
+    key="insight_2",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 3. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("② 그래프 제목")
+# st.header("③ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig2, width="stretch", key="chart_2")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_2")
+# st.plotly_chart(fig3, width="stretch", key="chart_3")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_3")
 # st.divider()
 # ============================================================
