@@ -332,14 +332,49 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 8. (다음 그래프를 추가할 자리)
+# 구역 8. 10위권에 들어간 대작들과 개봉 첫 주 관객 또한 많았는가
+# ============================================================
+st.header("⑧ 10위권에 들어간 대작들과 개봉 첫 주 관객 또한 많았는가")
+st.markdown(
+    "가로축은 10위권에 머문 날수(days_in_top10), 세로축은 개봉 첫 주 관객(first_week_audi)입니다. "
+    "오래 버틴 영화가 처음부터 관객이 많았는지 살펴보세요."
+)
+
+fig8 = px.scatter(
+    df,
+    x="days_in_top10",
+    y="first_week_audi",
+    hover_name="movieNm",
+    title="10위권에 들어간 대작들과 개봉 첫 주 관객 또한 많았는가",
+)
+fig8.update_traces(
+    marker_color="#457b9d",
+    hovertemplate="영화명: %{hovertext}<br>10위권 체류일수: %{x}일<br>첫 주 관객: %{y:,}명<extra></extra>",
+)
+fig8.update_layout(
+    xaxis_title="10위권 체류일수(일)",
+    yaxis_title="개봉 첫 주 관객(명)",
+)
+
+st.plotly_chart(fig8, width="stretch", key="chart_8")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 10위권에 오래 머문 영화라고 해서 꼭 첫 주 관객이 많았던 것은 아니다.",
+    key="insight_8",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 9. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("⑧ 그래프 제목")
+# st.header("⑨ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig8, width="stretch", key="chart_8")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_8")
+# st.plotly_chart(fig9, width="stretch", key="chart_9")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_9")
 # st.divider()
 # ============================================================
