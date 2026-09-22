@@ -129,14 +129,217 @@ st.text_input(
 st.divider()
 
 # ============================================================
-# 구역 3. (다음 그래프를 추가할 자리)
+# 구역 3. 총 관객 히스토그램
+# ============================================================
+st.header("③ 총 관객 히스토그램")
+st.markdown("영화들의 총 관객(total_audi)이 어떤 구간에 많이 몰려 있는지 보여줍니다.")
+
+fig3 = px.histogram(
+    df,
+    x="total_audi",
+    nbins=30,
+    title="총 관객 분포",
+)
+fig3.update_traces(
+    marker_color="#457b9d",
+    hovertemplate="총 관객 구간: %{x}<br>영화 편수: %{y}편<extra></extra>",
+)
+fig3.update_layout(
+    xaxis_title="총 관객(명)",
+    yaxis_title="영화 편수",
+    bargap=0.05,
+)
+
+st.plotly_chart(fig3, width="stretch", key="chart_3")
+
+# 대부분의 영화가 몰려 있는 구간과, 가장 관객이 많은 영화를 자동으로 계산해서
+# 그래프 아래에 문구로 보여줍니다.
+bin_edges = pd.cut(df["total_audi"], bins=30)
+most_common_bin = bin_edges.value_counts().idxmax()
+top_movie_row = df.loc[df["total_audi"].idxmax()]
+
+# pd.cut은 최솟값을 포함시키려고 맨 첫 구간의 왼쪽 경계를 실제보다
+# 살짝(전체 범위의 0.1%) 더 낮게 잡습니다. 관객수는 음수가 될 수 없으므로
+# 화면에 보여줄 때는 0보다 작으면 0으로 맞춰줍니다.
+bin_left = max(0, int(most_common_bin.left))
+bin_right = int(most_common_bin.right)
+
+st.info(
+    f"📊 가장 많은 영화가 몰려 있는 구간은 **{bin_left:,}명 ~ "
+    f"{bin_right:,}명** 사이입니다. "
+    f"가장 총 관객이 많은 영화는 **'{top_movie_row['movieNm']}'**"
+    f"(총 {int(top_movie_row['total_audi']):,}명)입니다."
+)
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 대부분의 영화는 관객 수가 적은 편이고, 소수의 영화만 크게 흥행한다.",
+    key="insight_3",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 4. 개봉일 스크린수와 총 관객의 관계
+# ============================================================
+st.header("④ 개봉일 스크린수와 총 관객의 관계")
+st.markdown(
+    "점 하나가 영화 한 편입니다. 개봉일에 스크린을 많이 잡을수록 "
+    "총 관객도 많은지 살펴보세요. 색은 대표 장르를 나타냅니다."
+)
+
+fig4 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    color="대표장르",
+    hover_name="movieNm",
+    title="개봉일 스크린수 vs 총 관객",
+)
+fig4.update_traces(
+    hovertemplate="영화명: %{hovertext}<br>개봉일 스크린수: %{x:,}관<br>총 관객: %{y:,}명<extra></extra>"
+)
+fig4.update_layout(
+    xaxis_title="개봉일 스크린수",
+    yaxis_title="총 관객(명)",
+    legend_title_text="대표 장르",
+)
+
+st.plotly_chart(fig4, width="stretch", key="chart_4")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 개봉일 스크린수가 많을수록 대체로 총 관객도 많은 경향이 있다.",
+    key="insight_4",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 5. 장르별 총 관객 박스플롯 (영화 10편 이상 장르만)
+# ============================================================
+st.header("⑤ 장르별 총 관객 박스플롯 (10편 이상인 장르만)")
+st.markdown(
+    "영화가 10편 이상 있는 장르만 뽑아서, 장르별 총 관객의 분포를 상자 그림으로 보여줍니다. "
+    "상자 밖으로 튀어나온 점(이상치)에 마우스를 올리면 영화명이 보여요."
+)
+
+genre_counts_all = df["대표장르"].value_counts()
+genres_10plus = genre_counts_all[genre_counts_all >= 10].index
+box_df = df[df["대표장르"].isin(genres_10plus)]
+
+fig5 = px.box(
+    box_df,
+    x="대표장르",
+    y="total_audi",
+    hover_name="movieNm",
+    points="outliers",
+    title="장르별 총 관객 박스플롯 (10편 이상 장르만)",
+)
+fig5.update_traces(
+    hovertemplate="영화명: %{hovertext}<br>총 관객: %{y:,}명<extra></extra>"
+)
+fig5.update_layout(
+    xaxis_title="대표 장르",
+    yaxis_title="총 관객(명)",
+)
+
+st.plotly_chart(fig5, width="stretch", key="chart_5")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 애니메이션 장르는 총 관객의 편차가 크고, 일부 영화가 크게 튄다.",
+    key="insight_5",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 6. 개봉일 스크린수와 총 관객의 관계 (버블 그래프)
+# ============================================================
+st.header("⑥ 개봉일 스크린수와 총 관객의 관계 (버블 그래프)")
+st.markdown(
+    "④번 산점도와 같은 x축·y축·색이지만, 이번에는 점 크기로 "
+    "개봉 첫 주 관객(first_week_audi)까지 함께 보여줍니다. "
+    "점이 클수록 첫 주에 많은 관객이 들었다는 뜻이에요."
+)
+
+fig6 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    size="first_week_audi",
+    color="대표장르",
+    hover_name="movieNm",
+    size_max=45,
+    title="개봉일 스크린수 vs 총 관객 (점 크기 = 첫 주 관객)",
+)
+fig6.update_traces(
+    hovertemplate=(
+        "영화명: %{hovertext}<br>"
+        "개봉일 스크린수: %{x:,}관<br>"
+        "총 관객: %{y:,}명<br>"
+        "첫 주 관객: %{marker.size:,}명"
+        "<extra></extra>"
+    )
+)
+fig6.update_layout(
+    xaxis_title="개봉일 스크린수",
+    yaxis_title="총 관객(명)",
+    legend_title_text="대표 장르",
+)
+
+st.plotly_chart(fig6, width="stretch", key="chart_6")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 첫 주 관객이 많았던 영화는 대체로 총 관객도 많다.",
+    key="insight_6",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 7. 제작 국가 → 장르 선버스트
+# ============================================================
+st.header("⑦ 제작 국가 → 장르 선버스트")
+st.markdown(
+    "안쪽 고리가 제작 국가(nation), 바깥쪽 고리가 그 국가에서 만든 영화의 대표 장르입니다. "
+    "칸의 크기는 영화 편수에 비례합니다."
+)
+
+sun_df = df.copy()
+sun_df["건수"] = 1
+
+fig7 = px.sunburst(
+    sun_df,
+    path=["nation", "대표장르"],
+    values="건수",
+    title="제작 국가 → 장르 선버스트 (칸 크기 = 영화 편수)",
+)
+fig7.update_traces(
+    hovertemplate="%{label}<br>편수: %{value}편<extra></extra>"
+)
+
+st.plotly_chart(fig7, width="stretch", key="chart_7")
+
+st.text_input(
+    "📝 이 그래프로 알 수 있는 것",
+    placeholder="예: 한국 영화는 드라마 비중이 크고, 미국 영화는 장르가 다양하게 퍼져 있다.",
+    key="insight_7",
+)
+
+st.divider()
+
+# ============================================================
+# 구역 8. (다음 그래프를 추가할 자리)
 # ------------------------------------------------------------
 # 새로운 그래프를 추가하려면 아래 패턴을 그대로 따라 하면 됩니다.
 #
-# st.header("③ 그래프 제목")
+# st.header("⑧ 그래프 제목")
 # st.markdown("그래프에 대한 간단한 설명")
 # ... (데이터 가공 + plotly 그래프 그리기) ...
-# st.plotly_chart(fig3, width="stretch", key="chart_3")
-# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_3")
+# st.plotly_chart(fig8, width="stretch", key="chart_8")
+# st.text_input("📝 이 그래프로 알 수 있는 것", key="insight_8")
 # st.divider()
 # ============================================================
